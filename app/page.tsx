@@ -1088,6 +1088,166 @@ function FruitBackdropLayer() {
   );
 }
 
+type DumplingBackdropKind = "dumpling" | "chopsticks" | "soy";
+
+function DumplingModel() {
+  return (
+    <group>
+      <mesh position={[0, -0.14, 0]} scale={[0.92, 0.58, 0.62]} castShadow>
+        <sphereGeometry args={[0.72, 30, 22]} />
+        <meshStandardMaterial color="#f2d7b7" roughness={0.82} />
+      </mesh>
+      <mesh position={[0, 0.12, -0.015]} scale={[0.76, 0.38, 0.46]} castShadow>
+        <sphereGeometry args={[0.66, 28, 20]} />
+        <meshStandardMaterial color="#f6dfc3" roughness={0.84} />
+      </mesh>
+      {[-0.38, -0.19, 0, 0.19, 0.38].map((x, index) => (
+        <mesh
+          key={x}
+          position={[x, 0.35 - Math.abs(x) * 0.16, 0.02]}
+          rotation={[0, 0, (index - 2) * -0.1]}
+          scale={[0.14, 0.32, 0.16]}
+          castShadow
+        >
+          <sphereGeometry args={[0.55, 18, 14]} />
+          <meshStandardMaterial color={index % 2 ? "#e7c49e" : "#efd0ac"} roughness={0.88} />
+        </mesh>
+      ))}
+      <mesh position={[0, -0.47, 0.02]} scale={[0.68, 0.12, 0.48]}>
+        <sphereGeometry args={[0.65, 22, 14]} />
+        <meshStandardMaterial color="#dfbd99" roughness={0.9} />
+      </mesh>
+    </group>
+  );
+}
+
+function ChopsticksModel() {
+  return (
+    <group>
+      {[-0.13, 0.13].map((x, index) => (
+        <group key={x} position={[x, 0, 0]} rotation={[0, 0, index ? -0.025 : 0.025]}>
+          <mesh castShadow>
+            <cylinderGeometry args={[0.035, 0.075, 3.2, 12]} />
+            <meshStandardMaterial color={index ? "#bd8145" : "#ca9051"} roughness={0.8} />
+          </mesh>
+          <mesh position={[0, 1.25, 0]}>
+            <cylinderGeometry args={[0.041, 0.041, 0.32, 12]} />
+            <meshStandardMaterial color="#9e6037" roughness={0.84} />
+          </mesh>
+        </group>
+      ))}
+    </group>
+  );
+}
+
+function SoySauceBottleModel() {
+  return (
+    <group>
+      <mesh position={[0, -0.22, 0]} castShadow>
+        <cylinderGeometry args={[0.34, 0.4, 1.15, 26]} />
+        <meshPhysicalMaterial color="#713927" roughness={0.48} transmission={0.06} thickness={0.18} />
+      </mesh>
+      <mesh position={[0, 0.42, 0]} castShadow>
+        <sphereGeometry args={[0.34, 24, 16]} />
+        <meshStandardMaterial color="#7b3e2a" roughness={0.55} />
+      </mesh>
+      <mesh position={[0, 0.73, 0]} castShadow>
+        <cylinderGeometry args={[0.17, 0.24, 0.48, 22]} />
+        <meshStandardMaterial color="#6b3325" roughness={0.58} />
+      </mesh>
+      <mesh position={[0, 1.02, 0]} castShadow>
+        <cylinderGeometry args={[0.22, 0.19, 0.25, 22]} />
+        <meshStandardMaterial color="#cf6754" roughness={0.7} />
+      </mesh>
+      <RoundedBox args={[0.5, 0.5, 0.035]} radius={0.07} smoothness={3} position={[0, -0.24, 0.385]}>
+        <meshStandardMaterial color="#f3dfb8" roughness={0.88} />
+      </RoundedBox>
+      <mesh position={[0, -0.23, 0.41]}>
+        <circleGeometry args={[0.1, 24]} />
+        <meshStandardMaterial color="#d97c60" roughness={0.8} />
+      </mesh>
+    </group>
+  );
+}
+
+function DumplingBackdropModel({ kind }: { kind: DumplingBackdropKind }) {
+  if (kind === "dumpling") return <DumplingModel />;
+  if (kind === "chopsticks") return <ChopsticksModel />;
+  return <SoySauceBottleModel />;
+}
+
+function InteractiveDumplingItem({
+  kind,
+  position,
+  scale,
+  phase,
+  rotation = [0, 0, 0],
+}: {
+  kind: DumplingBackdropKind;
+  position: [number, number, number];
+  scale: number;
+  phase: number;
+  rotation?: [number, number, number];
+}) {
+  const group = useRef<THREE.Group>(null);
+  const hovered = useRef(false);
+  const hoverAmount = useRef(0);
+
+  useFrame(({ clock }, delta) => {
+    if (!group.current) return;
+    hoverAmount.current = THREE.MathUtils.damp(hoverAmount.current, hovered.current ? 1 : 0, 8, delta);
+    const time = clock.elapsedTime + phase;
+    const outward = Math.sign(position[0]) || 1;
+    group.current.position.set(
+      position[0] + Math.sin(time * 0.68) * 0.07 + hoverAmount.current * outward * 0.24,
+      position[1] + Math.cos(time * 0.82) * 0.08 + hoverAmount.current * 0.2,
+      position[2],
+    );
+    group.current.rotation.y = Math.sin(time * 0.5) * 0.14 + hoverAmount.current * outward * 0.22;
+    group.current.rotation.z = Math.sin(time * 0.62) * 0.08 + hoverAmount.current * outward * 0.12;
+    group.current.scale.setScalar(scale * (1 + hoverAmount.current * 0.11));
+  });
+
+  return (
+    <group
+      ref={group}
+      position={position}
+      scale={scale}
+      onPointerEnter={(event) => {
+        event.stopPropagation();
+        hovered.current = true;
+      }}
+      onPointerLeave={() => {
+        hovered.current = false;
+      }}
+    >
+      <group rotation={rotation}>
+        <DumplingBackdropModel kind={kind} />
+      </group>
+    </group>
+  );
+}
+
+function DumplingBackdropLayer() {
+  const items: { kind: DumplingBackdropKind; position: [number, number, number]; scale: number; phase: number; rotation?: [number, number, number] }[] = [
+    { kind: "dumpling", position: [-4.7, 2.35, -0.1], scale: 1.2, phase: 0.3, rotation: [0.08, -0.2, -0.08] },
+    { kind: "chopsticks", position: [4.65, 1.95, -0.2], scale: 0.82, phase: 1.8, rotation: [0.06, -0.1, -0.68] },
+    { kind: "soy", position: [-4.65, -2.05, 0], scale: 1.08, phase: 3.4, rotation: [0.02, 0.18, 0.04] },
+    { kind: "dumpling", position: [4.72, -2.15, -0.1], scale: 1.08, phase: 4.9, rotation: [-0.02, 0.28, 0.1] },
+  ];
+
+  return (
+    <div className="dumpling-backdrop-layer" aria-hidden="true">
+      <Canvas dpr={[1, 1.5]} camera={{ position: [0, 0, 11], fov: 43 }} gl={{ alpha: true, antialias: true }}>
+        <ambientLight intensity={1.6} />
+        <directionalLight position={[-4, 7, 8]} intensity={2.25} />
+        <pointLight position={[5, -1, 5]} intensity={0.6} color="#f7dcc2" />
+        {items.map((item, index) => <InteractiveDumplingItem key={`${item.kind}-${index}`} {...item} />)}
+      </Canvas>
+    </div>
+  );
+}
+
 type MatchaBackdropKind = "whisk" | "latte" | "milk";
 
 function MatchaWhiskModel() {
@@ -1781,6 +1941,7 @@ function InfoPanel({ section, onClose, onStartMatchaGame }: { section: SectionId
 
   return (
     <div className="panel-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
+      {section === "about" && <DumplingBackdropLayer />}
       {section === "experience" && <FruitBackdropLayer />}
       {section === "contact" && <MatchaBackdropLayer />}
       <section className={`info-panel panel-${section}`} role="dialog" aria-modal="true" aria-labelledby="panel-title">

@@ -231,8 +231,8 @@ button { color: inherit; }
   overflow: hidden;
   animation: fadeIn .28s ease both;
 }
-.fruit-backdrop-layer, .matcha-backdrop-layer { position: absolute; z-index: 0; inset: 0; }
-.fruit-backdrop-layer canvas, .matcha-backdrop-layer canvas { cursor: pointer; }
+.fruit-backdrop-layer, .matcha-backdrop-layer, .dumpling-backdrop-layer { position: absolute; z-index: 0; inset: 0; }
+.fruit-backdrop-layer canvas, .matcha-backdrop-layer canvas, .dumpling-backdrop-layer canvas { cursor: pointer; }
 .info-panel {
   position: relative;
   z-index: 2;
@@ -333,7 +333,7 @@ button { color: inherit; }
 
 .fruit-game-overlay { position: fixed; z-index: 70; inset: 0; overflow: hidden; isolation: isolate; background: linear-gradient(#badfed 0 72%, #e7d6ad 100%); animation: fadeIn .3s ease both; }
 .fruit-game-overlay::after { content: ""; position: absolute; z-index: 1; inset: auto 0 0; height: 25%; pointer-events: none; background: linear-gradient(transparent, rgba(125,98,74,.13)); }
-.fruit-game-canvas { position: absolute !important; z-index: 0; inset: 0; width: 100% !important; height: 100% !important; cursor: none; }
+.fruit-game-canvas { position: absolute !important; z-index: 0; inset: 0; width: 100% !important; height: 100% !important; cursor: default; }
 .game-close-button { position: absolute; z-index: 4; top: 22px; right: 24px; display: grid; place-items: center; width: 38px; height: 38px; border: 1px solid rgba(255,255,255,.62); border-radius: 50%; background: rgba(255,250,239,.76); box-shadow: 0 7px 18px rgba(75,101,94,.14); color: #786d68; backdrop-filter: blur(9px); cursor: pointer; font-size: 25px; }
 .fruit-game-hud { position: absolute; z-index: 3; top: 20px; left: 50%; display: grid; grid-template-columns: 110px minmax(180px, 1fr) 110px; align-items: center; gap: 12px; width: min(610px, calc(100vw - 150px)); transform: translateX(-50%); pointer-events: none; }
 .game-score, .game-lives, .game-heading { border: 1px solid rgba(255,255,255,.65); background: rgba(255,250,239,.78); box-shadow: 0 8px 24px rgba(72,98,89,.13); backdrop-filter: blur(10px); }
