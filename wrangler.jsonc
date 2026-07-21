@@ -1,10 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "emma-wu-personal-website",
+  "name": "emma-wu-little-plaza",
   "compatibility_date": "2026-07-21",
-  "compatibility_flags": [
-    "nodejs_compat"
-  ],
   "main": "./worker/index.ts",
   "assets": {
     "directory": "dist/client",
