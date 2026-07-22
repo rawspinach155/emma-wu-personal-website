@@ -60,6 +60,17 @@ const EMPTY_CONTROLS: ControlState = {
   ArrowRight: false,
 };
 
+const MOVEMENT_KEYS: Record<string, Direction> = {
+  ArrowUp: "ArrowUp",
+  ArrowDown: "ArrowDown",
+  ArrowLeft: "ArrowLeft",
+  ArrowRight: "ArrowRight",
+  w: "ArrowUp",
+  s: "ArrowDown",
+  a: "ArrowLeft",
+  d: "ArrowRight",
+};
+
 const FRUIT_GAME_BASKET_POSITION = new THREE.Vector3(6.9, 0, -1.15);
 
 const sectionContent = {
@@ -2140,11 +2151,12 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const directions = new Set<Direction>(["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"]);
+    const getMovementDirection = (key: string) => MOVEMENT_KEYS[key] ?? MOVEMENT_KEYS[key.toLowerCase()];
     const keyDown = (event: KeyboardEvent) => {
-      if (directions.has(event.key as Direction)) {
+      const direction = getMovementDirection(event.key);
+      if (direction) {
         event.preventDefault();
-        controls.current[event.key as Direction] = true;
+        controls.current[direction] = true;
       }
       if ((event.key === "Enter" || event.key === " ") && nearGameBasket && !activeSection && !gameOpen) {
         event.preventDefault();
@@ -2160,7 +2172,8 @@ export default function Home() {
       }
     };
     const keyUp = (event: KeyboardEvent) => {
-      if (directions.has(event.key as Direction)) controls.current[event.key as Direction] = false;
+      const direction = getMovementDirection(event.key);
+      if (direction) controls.current[direction] = false;
     };
     window.addEventListener("keydown", keyDown, { passive: false });
     window.addEventListener("keyup", keyUp);
@@ -2259,7 +2272,7 @@ export default function Home() {
         <aside className="intro-card">
           <button onClick={() => setShowIntro(false)} aria-label="Dismiss instructions">×</button>
           <span className="intro-icon">⌁</span>
-          <div><strong>Welcome, friend!</strong><p>Drag anywhere to look around, then use the arrow keys to walk. Visit a cart—or find the little fruit basket to play!</p></div>
+          <div><strong>Welcome, friend!</strong><p>Drag anywhere to look around, then use WASD or the arrow keys to walk. Visit a cart—or find the little fruit basket to play!</p></div>
         </aside>
       )}
 
@@ -2285,7 +2298,7 @@ export default function Home() {
 
       <DPad onPress={(key) => setControl(key, true)} onRelease={(key) => setControl(key, false)} />
 
-      <div className="navigation-blurb"><span>↑ ↓ ← →</span><strong>Use the arrow keys to navigate</strong><small>Drag to look around · Enter to open</small></div>
+      <div className="navigation-blurb"><span>WASD</span><strong>Use WASD or arrow keys</strong><small>Drag to look around · Enter to open</small></div>
 
       {activeSection && (
         <InfoPanel
