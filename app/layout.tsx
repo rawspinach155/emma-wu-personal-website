@@ -9,17 +9,17 @@ export async function generateMetadata(): Promise<Metadata> {
   const ogImage = `${protocol}://${host}/og-v6.png`;
 
   return {
-    title: "Emma Wu’s Little Plaza",
+    title: "Emma Wu's Personal Website",
     description: "Explore Emma Wu’s playful 3D food-cart portfolio plaza.",
     openGraph: {
-      title: "Emma Wu’s Little Plaza",
+      title: "Emma Wu's Personal Website",
       description: "Explore a cozy 3D plaza to learn about Emma, her experience, and how to get in touch.",
       type: "website",
       images: [{ url: ogImage, width: 1600, height: 900, alt: "Emma Wu on a soft lavender background" }],
     },
     twitter: {
       card: "summary_large_image",
-      title: "Emma Wu’s Little Plaza",
+      title: "Emma Wu's Personal Website",
       description: "A playful 3D food-cart portfolio.",
       images: [ogImage],
     },
