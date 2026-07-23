@@ -129,6 +129,7 @@ button { color: inherit; }
   white-space: nowrap;
 }
 .game-basket-bubble { border-color: #a77991; background: #fff0f5; color: #8b6078; box-shadow: 0 5px 0 rgba(122, 76, 103, .16); }
+.mystery-paper-bubble { border-color: #9b7dad; background: #f8efff; color: #765a89; box-shadow: 0 5px 0 rgba(109, 82, 125, .16); }
 
 .intro-card {
   position: absolute;
@@ -217,6 +218,8 @@ button { color: inherit; }
 .action-prompt:hover { transform: translateX(-50%) translateY(-3px); }
 .game-action-prompt { background: rgba(255, 244, 248, .95); }
 .game-action-prompt > span { background: #f0cada; color: #925f79; }
+.paper-action-prompt { background: rgba(251, 246, 255, .96); }
+.paper-action-prompt > span { background: #e5d2f0; color: #795c8c; }
 @keyframes promptPop { from { opacity: 0; transform: translate(-50%, 12px) scale(.88); } }
 
 .navigation-blurb {
@@ -280,6 +283,7 @@ button { color: inherit; }
 .panel-about { --panel-accent: #d98d7c; }
 .panel-experience { --panel-accent: #a56f99; }
 .panel-contact { --panel-accent: #76976a; }
+.panel-thank-you { --panel-accent: #9271a5; width: min(590px, 94vw); }
 .panel-tape { position: absolute; top: -5px; left: 50%; width: 96px; height: 25px; background: rgba(211, 192, 226, .72); transform: translateX(-50%) rotate(-2deg); clip-path: polygon(4% 8%, 96% 0, 100% 86%, 3% 100%); }
 .close-button { position: absolute; z-index: 2; top: 18px; right: 20px; display: grid; place-items: center; width: 36px; height: 36px; border: 0; border-radius: 50%; background: #efe5d7; color: #786c63; font-size: 24px; box-shadow: inset 0 -3px 0 rgba(85,71,61,.1); cursor: pointer; transition: transform .2s; }
 .close-button:hover { transform: rotate(8deg) scale(1.08); }
@@ -290,6 +294,34 @@ button { color: inherit; }
 .panel-heading p { margin: 0 0 2px; color: var(--panel-accent); font-size: 10px; font-weight: 1000; letter-spacing: .15em; text-transform: uppercase; }
 .panel-heading h2 { margin: 0; color: #4e4641; font-size: clamp(28px, 5vw, 43px); line-height: 1; letter-spacing: -.04em; }
 .panel-intro { margin: 23px 0 25px; color: #776b63; font-size: 14px; line-height: 1.65; font-weight: 650; }
+
+.thank-you-backdrop { background: rgba(74, 84, 83, .32); }
+.thank-you-stamp { font-size: 27px; }
+.thank-you-note {
+  position: relative;
+  margin-top: 26px;
+  padding: clamp(25px, 5vw, 38px);
+  border: 1px solid rgba(136, 105, 151, .16);
+  border-radius: 20px 25px 18px 23px;
+  background:
+    repeating-linear-gradient(transparent 0 31px, rgba(154, 128, 163, .1) 32px 33px),
+    linear-gradient(145deg, #fffdf7, #fbf5ff);
+  box-shadow: inset 0 -6px 0 rgba(117, 88, 128, .04), 0 10px 25px rgba(83, 69, 84, .07);
+  transform: rotate(-.35deg);
+}
+.thank-you-note::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 22px;
+  border-left: 1px solid rgba(224, 157, 157, .18);
+}
+.thank-you-note .note-pin { position: absolute; top: 12px; right: 16px; color: #c5a4d4; font-size: 15px; }
+.thank-you-note p { position: relative; z-index: 1; margin: 0; color: #6f626c; font-size: clamp(14px, 2.8vw, 17px); font-weight: 650; line-height: 1.9; }
+.thank-you-note .thank-you-personal-signoff { margin-top: 16px; color: #92769a; font-size: 12px; font-weight: 900; line-height: 1.45; text-align: right; }
+.thank-you-signoff { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 7px; margin-top: 20px; color: #9b819d; font-size: 9px; font-weight: 950; letter-spacing: .08em; text-transform: uppercase; }
+.thank-you-signoff b { color: #d3bbd9; }
 
 .about-grid { display: grid; grid-template-columns: .8fr 1.2fr; align-items: start; gap: 18px; }
 .mini-card { padding: 17px; border: 1px solid rgba(127,104,89,.12); border-radius: 20px; background: #f6dccf; box-shadow: inset 0 -5px 0 rgba(127,90,73,.06); }
@@ -521,6 +553,10 @@ button { color: inherit; }
   .panel-content-frame { padding: 32px 13px 18px; border-radius: 22px 22px 0 0; }
   .play-game-button { top: 18px; right: 64px; }
   .panel-heading { gap: 12px; }
+  .panel-thank-you .panel-heading h2 { padding-right: 25px; font-size: 31px; }
+  .thank-you-note { margin-top: 21px; padding: 25px 23px 24px 34px; }
+  .thank-you-note p { font-size: 13px; line-height: 1.78; }
+  .thank-you-note .thank-you-personal-signoff { font-size: 10px; }
   .panel-stamp { width: 52px; height: 52px; border-radius: 17px; }
   .about-grid { grid-template-columns: 1fr; }
   .portrait-card { min-height: 0; grid-template-columns: 96px 1fr; text-align: left; }

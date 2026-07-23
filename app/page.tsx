@@ -74,6 +74,7 @@ const MOVEMENT_KEYS: Record<string, Direction> = {
 };
 
 const FRUIT_GAME_BASKET_POSITION = new THREE.Vector3(6.9, 0, -1.15);
+const MYSTERY_PAPERS_POSITION = new THREE.Vector3(-6.45, 0, -0.55);
 
 const sectionContent = {
   about: {
@@ -584,6 +585,7 @@ function Player({
   playerPosition,
   onNearChange,
   onNearGameChange,
+  onNearPapersChange,
   onMove,
 }: {
   controls: React.MutableRefObject<ControlState>;
@@ -592,6 +594,7 @@ function Player({
   playerPosition: React.MutableRefObject<THREE.Vector3>;
   onNearChange: (id: SectionId | null) => void;
   onNearGameChange: (isNear: boolean) => void;
+  onNearPapersChange: (isNear: boolean) => void;
   onMove: () => void;
 }) {
   const group = useRef<THREE.Group>(null);
@@ -601,6 +604,7 @@ function Player({
   const rightArm = useRef<THREE.Group>(null);
   const lastNear = useRef<SectionId | null>(null);
   const lastNearGame = useRef(false);
+  const lastNearPapers = useRef(false);
   const wasMoving = useRef(false);
   const direction = useRef(new THREE.Vector3());
   const forward = useRef(new THREE.Vector3());
@@ -706,8 +710,18 @@ function Player({
       onNearGameChange(nearGame);
     }
 
+    const papersDistance = Math.hypot(
+      group.current.position.x - MYSTERY_PAPERS_POSITION.x,
+      group.current.position.z - MYSTERY_PAPERS_POSITION.z,
+    );
+    const nearPapers = papersDistance < 1.65;
+    if (nearPapers !== lastNearPapers.current) {
+      lastNearPapers.current = nearPapers;
+      onNearPapersChange(nearPapers);
+    }
+
     let near: SectionId | null = null;
-    if (!nearGame) {
+    if (!nearGame && !nearPapers) {
       let nearestDistance = Infinity;
       STALLS.forEach((stall) => {
         const dx = group.current!.position.x - stall.position[0];
@@ -862,11 +876,14 @@ function World({
   gameOpen,
   nearSection,
   nearGameBasket,
+  nearPapers,
   onNearChange,
   onNearGameChange,
+  onNearPapersChange,
   onMove,
   onOpen,
   onStartGame,
+  onOpenPapers,
 }: {
   controls: React.MutableRefObject<ControlState>;
   joystick: React.MutableRefObject<JoystickVector>;
@@ -875,11 +892,14 @@ function World({
   gameOpen: boolean;
   nearSection: SectionId | null;
   nearGameBasket: boolean;
+  nearPapers: boolean;
   onNearChange: (id: SectionId | null) => void;
   onNearGameChange: (isNear: boolean) => void;
+  onNearPapersChange: (isNear: boolean) => void;
   onMove: () => void;
   onOpen: (id: SectionId) => void;
   onStartGame: () => void;
+  onOpenPapers: () => void;
 }) {
   const playerPosition = useRef(new THREE.Vector3(0, 0, 5.3));
 
@@ -903,9 +923,10 @@ function World({
       />
       <Plaza />
       {STALLS.map((stall) => (
-        <Cart key={stall.id} data={stall} active={nearSection === stall.id && activeSection === null && !gameOpen} onOpen={() => onOpen(stall.id)} />
+        <Cart key={stall.id} data={stall} active={nearSection === stall.id && !nearPapers && activeSection === null && !gameOpen} onOpen={() => onOpen(stall.id)} />
       ))}
       <PlazaGameBasket active={nearGameBasket && activeSection === null && !gameOpen} onOpen={onStartGame} />
+      <MysteryPaperPile active={nearPapers && activeSection === null && !gameOpen} onOpen={onOpenPapers} />
       <Player
         controls={controls}
         joystick={joystick}
@@ -913,6 +934,7 @@ function World({
         playerPosition={playerPosition}
         onNearChange={onNearChange}
         onNearGameChange={onNearGameChange}
+        onNearPapersChange={onNearPapersChange}
         onMove={onMove}
       />
       <CameraRig playerPosition={playerPosition} mobileLook={mobileLook} />
@@ -1063,6 +1085,83 @@ function PlazaGameBasket({ active, onOpen }: { active: boolean; onOpen: () => vo
           <Float speed={2.3} floatIntensity={0.18}>
             <Html position={[0, 1.75, 0]} center distanceFactor={9} style={{ pointerEvents: "none" }}>
               <div className="near-bubble game-basket-bubble">play fruit catch!</div>
+            </Html>
+          </Float>
+        </>
+      )}
+    </group>
+  );
+}
+
+function MysteryPaperPile({ active, onOpen }: { active: boolean; onOpen: () => void }) {
+  const group = useRef<THREE.Group>(null);
+  const hover = useRef(false);
+  const pages = [
+    { position: [-0.05, 0.055, 0.02] as [number, number, number], rotation: -0.12, color: "#f0e6d0" },
+    { position: [0.04, 0.09, -0.03] as [number, number, number], rotation: 0.08, color: "#fff8e9" },
+    { position: [-0.02, 0.125, 0.03] as [number, number, number], rotation: -0.035, color: "#fffdf4" },
+  ];
+
+  useFrame(({ clock }, delta) => {
+    if (!group.current) return;
+    const targetScale = active || hover.current ? 1.08 : 1;
+    const scale = THREE.MathUtils.damp(group.current.scale.x, targetScale, 8, delta);
+    group.current.scale.setScalar(scale);
+    group.current.rotation.y = -0.16 + Math.sin(clock.elapsedTime * 0.7) * 0.018;
+  });
+
+  return (
+    <group
+      ref={group}
+      position={MYSTERY_PAPERS_POSITION}
+      onClick={(event) => {
+        event.stopPropagation();
+        if (active) onOpen();
+      }}
+      onPointerEnter={(event) => {
+        event.stopPropagation();
+        hover.current = true;
+      }}
+      onPointerLeave={() => {
+        hover.current = false;
+      }}
+    >
+      {pages.map((page, index) => (
+        <RoundedBox
+          key={index}
+          args={[1.05, 0.045, 0.76]}
+          radius={0.025}
+          smoothness={2}
+          position={page.position}
+          rotation={[0, page.rotation, index === 1 ? 0.012 : -0.008]}
+          castShadow
+        >
+          <meshStandardMaterial color={page.color} roughness={0.92} />
+        </RoundedBox>
+      ))}
+
+      <group position={[-0.03, 0.158, 0.04]} rotation={[0, -0.035, 0]}>
+        {[0.16, 0.05, -0.06].map((z, index) => (
+          <mesh key={z} position={[-0.17 + index * 0.03, 0, z]}>
+            <boxGeometry args={[index === 2 ? 0.42 : 0.57, 0.008, 0.025]} />
+            <meshStandardMaterial color="#c9b8aa" roughness={0.9} />
+          </mesh>
+        ))}
+        <mesh position={[0.37, 0.006, -0.18]} rotation={[0, 0.55, 0]}>
+          <boxGeometry args={[0.15, 0.012, 0.15]} />
+          <meshStandardMaterial color="#ead9b9" roughness={0.92} />
+        </mesh>
+      </group>
+
+      {active && (
+        <>
+          <mesh position={[0, 0.025, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+            <ringGeometry args={[0.7, 0.78, 36]} />
+            <meshBasicMaterial color="#ead8f5" transparent opacity={0.6} side={THREE.DoubleSide} />
+          </mesh>
+          <Float speed={2.4} floatIntensity={0.2}>
+            <Html position={[0, 1.18, 0]} center distanceFactor={9} style={{ pointerEvents: "none" }}>
+              <div className="near-bubble mystery-paper-bubble">what&apos;s this?</div>
             </Html>
           </Float>
         </>
@@ -2138,6 +2237,39 @@ function InfoPanel({ section, onClose, onStartMatchaGame }: { section: SectionId
   );
 }
 
+function ThankYouPanel({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="panel-backdrop thank-you-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
+      <section className="info-panel panel-thank-you" role="dialog" aria-modal="true" aria-labelledby="thank-you-title">
+        <div className="panel-tape" />
+        <button className="close-button" onClick={onClose} aria-label="Close note">
+          ×
+        </button>
+        <div className="panel-content-frame">
+          <div className="panel-heading">
+            <span className="panel-stamp thank-you-stamp" aria-hidden="true">✉</span>
+            <div>
+              <p>A little note from the plaza</p>
+              <h2 id="thank-you-title">Thanks for stopping by!</h2>
+            </div>
+          </div>
+          <div className="thank-you-note">
+            <span className="note-pin" aria-hidden="true">✦</span>
+            <p>
+              Thank you for visiting my website! If you couldn&apos;t already tell, I am a big foodie and this website features some of my favorite foods. I hope you enjoyed your time here and wish you some yummy eats in the near future!
+            </p>
+            <p className="thank-you-personal-signoff">- Vibecoded with love, Emma :)</p>
+            <div className="thank-you-signoff" aria-hidden="true">
+              <span>dumplings</span><b>·</b><span>fruit</span><b>·</b><span>matcha</span>
+            </div>
+          </div>
+          <div className="panel-footer"><span>thanks for visiting</span><span>Emma’s plaza · 2026</span></div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 function MobileJoystick({ onMove }: { onMove: (x: number, y: number) => void }) {
   const base = useRef<HTMLDivElement>(null);
   const activePointer = useRef<number | null>(null);
@@ -2272,6 +2404,7 @@ export default function Home() {
   const gameAudioRef = useRef<AudioContext | null>(null);
   const [nearSection, setNearSection] = useState<SectionId | null>(null);
   const [nearGameBasket, setNearGameBasket] = useState(false);
+  const [nearPapers, setNearPapers] = useState(false);
   const [activeSection, setActiveSection] = useState<SectionId | null>(null);
   const [showIntro, setShowIntro] = useState(true);
   const [hintAvailable, setHintAvailable] = useState(false);
@@ -2279,6 +2412,7 @@ export default function Home() {
   const [musicEnabled, setMusicEnabled] = useState(true);
   const [gameOpen, setGameOpen] = useState(false);
   const [matchaGameOpen, setMatchaGameOpen] = useState(false);
+  const [thankYouOpen, setThankYouOpen] = useState(false);
 
   const openSection = useCallback((id: SectionId) => setActiveSection(id), []);
   const startGame = useCallback(() => {
@@ -2288,6 +2422,12 @@ export default function Home() {
     joystick.current = { x: 0, y: 0 };
     setShowIntro(false);
     setGameOpen(true);
+  }, []);
+  const openPapers = useCallback(() => {
+    controls.current = { ...EMPTY_CONTROLS };
+    joystick.current = { x: 0, y: 0 };
+    setShowIntro(false);
+    setThankYouOpen(true);
   }, []);
   const setJoystick = useCallback((x: number, y: number) => {
     joystick.current.x = x;
@@ -2310,15 +2450,19 @@ export default function Home() {
         event.preventDefault();
         controls.current[direction] = true;
       }
-      if ((event.key === "Enter" || event.key === " ") && nearGameBasket && !activeSection && !gameOpen) {
+      if ((event.key === "Enter" || event.key === " ") && nearPapers && !activeSection && !gameOpen && !matchaGameOpen && !thankYouOpen) {
+        event.preventDefault();
+        openPapers();
+      } else if ((event.key === "Enter" || event.key === " ") && nearGameBasket && !activeSection && !gameOpen && !thankYouOpen) {
         event.preventDefault();
         startGame();
-      } else if ((event.key === "Enter" || event.key === " ") && nearSection && !activeSection && !gameOpen) {
+      } else if ((event.key === "Enter" || event.key === " ") && nearSection && !activeSection && !gameOpen && !thankYouOpen) {
         event.preventDefault();
         openSection(nearSection);
       }
       if (event.key === "Escape") {
-        if (matchaGameOpen) setMatchaGameOpen(false);
+        if (thankYouOpen) setThankYouOpen(false);
+        else if (matchaGameOpen) setMatchaGameOpen(false);
         else if (gameOpen) setGameOpen(false);
         else if (activeSection) setActiveSection(null);
       }
@@ -2333,7 +2477,7 @@ export default function Home() {
       window.removeEventListener("keydown", keyDown);
       window.removeEventListener("keyup", keyUp);
     };
-  }, [activeSection, gameOpen, matchaGameOpen, nearGameBasket, nearSection, openSection, startGame]);
+  }, [activeSection, gameOpen, matchaGameOpen, nearGameBasket, nearPapers, nearSection, openPapers, openSection, startGame, thankYouOpen]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => setLoaded(true), 500);
@@ -2398,19 +2542,22 @@ export default function Home() {
             joystick={joystick}
             mobileLook={mobileLook}
             activeSection={activeSection}
-            gameOpen={gameOpen || matchaGameOpen}
+            gameOpen={gameOpen || matchaGameOpen || thankYouOpen}
             nearSection={nearSection}
             nearGameBasket={nearGameBasket}
+            nearPapers={nearPapers}
             onNearChange={setNearSection}
             onNearGameChange={setNearGameBasket}
+            onNearPapersChange={setNearPapers}
             onMove={collapseIntro}
             onOpen={openSection}
             onStartGame={startGame}
+            onOpenPapers={openPapers}
           />
         </Suspense>
       </Canvas>
 
-      {!activeSection && !gameOpen && !matchaGameOpen && <MobileLookSurface onLook={updateMobileLook} />}
+      {!activeSection && !gameOpen && !matchaGameOpen && !thankYouOpen && <MobileLookSurface onLook={updateMobileLook} />}
 
       <div className="top-left-badge"><span>✿</span> Emma’s little plaza</div>
       <button
@@ -2424,7 +2571,7 @@ export default function Home() {
         {musicEnabled ? "music on" : "music off"}
       </button>
 
-      {showIntro && !activeSection && !gameOpen && !matchaGameOpen && (
+      {showIntro && !activeSection && !gameOpen && !matchaGameOpen && !thankYouOpen && (
         <aside className="intro-card">
           <button onClick={collapseIntro} aria-label="Collapse navigation instructions">×</button>
           <span className="intro-icon">⌁</span>
@@ -2432,7 +2579,7 @@ export default function Home() {
         </aside>
       )}
 
-      {hintAvailable && !showIntro && !activeSection && !gameOpen && !matchaGameOpen && (
+      {hintAvailable && !showIntro && !activeSection && !gameOpen && !matchaGameOpen && !thankYouOpen && (
         <button
           className="intro-hint-button"
           type="button"
@@ -2451,19 +2598,25 @@ export default function Home() {
         ))}
       </div>
 
-      {nearGameBasket && !activeSection && !gameOpen && (
+      {nearPapers && !activeSection && !gameOpen && !matchaGameOpen && !thankYouOpen && (
+        <button className="action-prompt paper-action-prompt" onClick={openPapers}>
+          <span>?</span><div><small>You found a little note!</small>What&apos;s this?</div>
+        </button>
+      )}
+
+      {nearGameBasket && !nearPapers && !activeSection && !gameOpen && !matchaGameOpen && !thankYouOpen && (
         <button className="action-prompt game-action-prompt" onClick={startGame}>
           <span>♪</span><div><small>You found the fruit basket!</small>Play catch the fruit</div>
         </button>
       )}
 
-      {nearStall && !nearGameBasket && !activeSection && !gameOpen && (
+      {nearStall && !nearGameBasket && !nearPapers && !activeSection && !gameOpen && !matchaGameOpen && !thankYouOpen && (
         <button className="action-prompt" onClick={() => openSection(nearStall.id)}>
           <span>↵</span><div><small>You found a cart!</small>Open {nearStall.label.toLowerCase()}</div>
         </button>
       )}
 
-      {!activeSection && !gameOpen && !matchaGameOpen && <MobileJoystick onMove={setJoystick} />}
+      {!activeSection && !gameOpen && !matchaGameOpen && !thankYouOpen && <MobileJoystick onMove={setJoystick} />}
 
       <div className="navigation-blurb navigation-desktop"><span>WASD</span><strong>Use WASD or arrow keys</strong><small>Drag to look around · Enter to open</small></div>
       <div className="navigation-blurb navigation-mobile"><span>MOVE</span><strong>Drag the joystick to walk</strong><small>Drag elsewhere to look around</small></div>
@@ -2481,6 +2634,7 @@ export default function Home() {
       )}
       {gameOpen && <FruitMiniGame onClose={() => setGameOpen(false)} audioContext={gameAudioRef.current} />}
       {matchaGameOpen && <MatchaWhiskGame onClose={() => setMatchaGameOpen(false)} />}
+      {thankYouOpen && <ThankYouPanel onClose={() => setThankYouOpen(false)} />}
     </main>
   );
 }
