@@ -9,6 +9,7 @@ type SectionId = "about" | "experience" | "contact";
 type Direction = "ArrowUp" | "ArrowDown" | "ArrowLeft" | "ArrowRight";
 type ControlState = Record<Direction, boolean>;
 type JoystickVector = { x: number; y: number };
+type CameraLookDelta = { x: number; y: number };
 
 type StallData = {
   id: SectionId;
@@ -600,7 +601,7 @@ function Player({
   const rightArm = useRef<THREE.Group>(null);
   const lastNear = useRef<SectionId | null>(null);
   const lastNearGame = useRef(false);
-  const movedOnce = useRef(false);
+  const wasMoving = useRef(false);
   const direction = useRef(new THREE.Vector3());
   const forward = useRef(new THREE.Vector3());
   const right = useRef(new THREE.Vector3());
@@ -672,11 +673,9 @@ function Player({
     direction.current.copy(forward.current).multiplyScalar(vertical).addScaledVector(right.current, horizontal);
 
     const moving = !paused && direction.current.lengthSq() > 0;
+    if (moving && !wasMoving.current) onMove();
+    wasMoving.current = moving;
     if (moving) {
-      if (!movedOnce.current) {
-        movedOnce.current = true;
-        onMove();
-      }
       direction.current.normalize();
       const nextX = THREE.MathUtils.clamp(group.current.position.x + direction.current.x * delta * 3.25 * inputStrength, -7.2, 7.2);
       const nextZ = THREE.MathUtils.clamp(group.current.position.z + direction.current.z * delta * 3.25 * inputStrength, -6.8, 6.6);
@@ -794,13 +793,21 @@ function Player({
   );
 }
 
-function CameraRig({ playerPosition }: { playerPosition: React.MutableRefObject<THREE.Vector3> }) {
+function CameraRig({
+  playerPosition,
+  mobileLook,
+}: {
+  playerPosition: React.MutableRefObject<THREE.Vector3>;
+  mobileLook: React.MutableRefObject<CameraLookDelta>;
+}) {
   const orbit = useRef<React.ComponentRef<typeof OrbitControls>>(null);
   const previousPlayerPosition = useRef(playerPosition.current.clone());
   const movementDelta = useRef(new THREE.Vector3());
+  const cameraOffset = useRef(new THREE.Vector3());
+  const spherical = useRef(new THREE.Spherical());
   const { camera } = useThree();
 
-  useFrame(() => {
+  useFrame(({ size }) => {
     if (!orbit.current) return;
     movementDelta.current.subVectors(playerPosition.current, previousPlayerPosition.current);
     if (movementDelta.current.lengthSq() > 0) {
@@ -808,6 +815,25 @@ function CameraRig({ playerPosition }: { playerPosition: React.MutableRefObject<
       orbit.current.target.add(movementDelta.current);
       previousPlayerPosition.current.copy(playerPosition.current);
     }
+
+    const lookX = THREE.MathUtils.clamp(mobileLook.current.x, -48, 48);
+    const lookY = THREE.MathUtils.clamp(mobileLook.current.y, -48, 48);
+    if (lookX !== 0 || lookY !== 0) {
+      cameraOffset.current.subVectors(camera.position, orbit.current.target);
+      spherical.current.setFromVector3(cameraOffset.current);
+      const radiansPerPixel = (Math.PI * 2 * 0.52) / Math.max(size.height, 1);
+      spherical.current.theta -= lookX * radiansPerPixel;
+      spherical.current.phi = THREE.MathUtils.clamp(
+        spherical.current.phi - lookY * radiansPerPixel,
+        0.54,
+        1.28,
+      );
+      cameraOffset.current.setFromSpherical(spherical.current);
+      camera.position.copy(orbit.current.target).add(cameraOffset.current);
+      mobileLook.current.x = 0;
+      mobileLook.current.y = 0;
+    }
+
     orbit.current.update();
   });
 
@@ -831,6 +857,7 @@ function CameraRig({ playerPosition }: { playerPosition: React.MutableRefObject<
 function World({
   controls,
   joystick,
+  mobileLook,
   activeSection,
   gameOpen,
   nearSection,
@@ -843,6 +870,7 @@ function World({
 }: {
   controls: React.MutableRefObject<ControlState>;
   joystick: React.MutableRefObject<JoystickVector>;
+  mobileLook: React.MutableRefObject<CameraLookDelta>;
   activeSection: SectionId | null;
   gameOpen: boolean;
   nearSection: SectionId | null;
@@ -887,7 +915,7 @@ function World({
         onNearGameChange={onNearGameChange}
         onMove={onMove}
       />
-      <CameraRig playerPosition={playerPosition} />
+      <CameraRig playerPosition={playerPosition} mobileLook={mobileLook} />
       <Petals />
       <ContactShadows position={[0, 0.1, 0]} opacity={0.28} scale={24} blur={2.6} far={13} />
     </>
@@ -2192,15 +2220,61 @@ function MobileJoystick({ onMove }: { onMove: (x: number, y: number) => void }) 
   );
 }
 
+function MobileLookSurface({ onLook }: { onLook: (deltaX: number, deltaY: number) => void }) {
+  const activePointer = useRef<number | null>(null);
+  const lastPosition = useRef({ x: 0, y: 0 });
+
+  const finishLook = useCallback((pointerId?: number) => {
+    if (pointerId !== undefined && activePointer.current !== pointerId) return;
+    activePointer.current = null;
+  }, []);
+
+  return (
+    <div
+      className="mobile-look-surface"
+      aria-hidden="true"
+      onPointerDown={(event) => {
+        if (activePointer.current !== null) return;
+        event.preventDefault();
+        event.stopPropagation();
+        activePointer.current = event.pointerId;
+        lastPosition.current = { x: event.clientX, y: event.clientY };
+        event.currentTarget.setPointerCapture(event.pointerId);
+      }}
+      onPointerMove={(event) => {
+        if (activePointer.current !== event.pointerId) return;
+        event.preventDefault();
+        event.stopPropagation();
+        const deltaX = THREE.MathUtils.clamp(event.clientX - lastPosition.current.x, -28, 28);
+        const deltaY = THREE.MathUtils.clamp(event.clientY - lastPosition.current.y, -28, 28);
+        lastPosition.current = { x: event.clientX, y: event.clientY };
+        onLook(deltaX, deltaY);
+      }}
+      onPointerUp={(event) => {
+        if (activePointer.current !== event.pointerId) return;
+        event.preventDefault();
+        event.stopPropagation();
+        if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+          event.currentTarget.releasePointerCapture(event.pointerId);
+        }
+        finishLook(event.pointerId);
+      }}
+      onPointerCancel={(event) => finishLook(event.pointerId)}
+    />
+  );
+}
+
 export default function Home() {
   const controls = useRef<ControlState>({ ...EMPTY_CONTROLS });
   const joystick = useRef<JoystickVector>({ x: 0, y: 0 });
+  const mobileLook = useRef<CameraLookDelta>({ x: 0, y: 0 });
   const audioRef = useRef<HTMLAudioElement>(null);
   const gameAudioRef = useRef<AudioContext | null>(null);
   const [nearSection, setNearSection] = useState<SectionId | null>(null);
   const [nearGameBasket, setNearGameBasket] = useState(false);
   const [activeSection, setActiveSection] = useState<SectionId | null>(null);
   const [showIntro, setShowIntro] = useState(true);
+  const [hintAvailable, setHintAvailable] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [musicEnabled, setMusicEnabled] = useState(true);
   const [gameOpen, setGameOpen] = useState(false);
@@ -2218,6 +2292,14 @@ export default function Home() {
   const setJoystick = useCallback((x: number, y: number) => {
     joystick.current.x = x;
     joystick.current.y = y;
+  }, []);
+  const updateMobileLook = useCallback((deltaX: number, deltaY: number) => {
+    mobileLook.current.x = THREE.MathUtils.clamp(mobileLook.current.x + deltaX, -48, 48);
+    mobileLook.current.y = THREE.MathUtils.clamp(mobileLook.current.y + deltaY, -48, 48);
+  }, []);
+  const collapseIntro = useCallback(() => {
+    setShowIntro(false);
+    setHintAvailable(true);
   }, []);
 
   useEffect(() => {
@@ -2314,18 +2396,21 @@ export default function Home() {
           <World
             controls={controls}
             joystick={joystick}
+            mobileLook={mobileLook}
             activeSection={activeSection}
             gameOpen={gameOpen || matchaGameOpen}
             nearSection={nearSection}
             nearGameBasket={nearGameBasket}
             onNearChange={setNearSection}
             onNearGameChange={setNearGameBasket}
-            onMove={() => setShowIntro(false)}
+            onMove={collapseIntro}
             onOpen={openSection}
             onStartGame={startGame}
           />
         </Suspense>
       </Canvas>
+
+      {!activeSection && !gameOpen && !matchaGameOpen && <MobileLookSurface onLook={updateMobileLook} />}
 
       <div className="top-left-badge"><span>✿</span> Emma’s little plaza</div>
       <button
@@ -2339,12 +2424,23 @@ export default function Home() {
         {musicEnabled ? "music on" : "music off"}
       </button>
 
-      {showIntro && !activeSection && (
+      {showIntro && !activeSection && !gameOpen && !matchaGameOpen && (
         <aside className="intro-card">
-          <button onClick={() => setShowIntro(false)} aria-label="Dismiss instructions">×</button>
+          <button onClick={collapseIntro} aria-label="Collapse navigation instructions">×</button>
           <span className="intro-icon">⌁</span>
-          <div><strong>Welcome, friend!</strong><p>Drag anywhere to look around, then use WASD, the arrow keys, or the mobile joystick to walk. Visit a cart—or find the little fruit basket to play!</p></div>
+          <div><strong>Welcome, friend!</strong><p>Drag anywhere to look around, then use WASD, the arrow keys, or the joystick (mobile only) to walk. Visit a cart—or find the little fruit basket to play!</p></div>
         </aside>
+      )}
+
+      {hintAvailable && !showIntro && !activeSection && !gameOpen && !matchaGameOpen && (
+        <button
+          className="intro-hint-button"
+          type="button"
+          aria-label="Open navigation instructions"
+          onClick={() => setShowIntro(true)}
+        >
+          !
+        </button>
       )}
 
       <div className="stall-key" aria-label="Plaza destinations">

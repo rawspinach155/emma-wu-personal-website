@@ -152,7 +152,32 @@ button { color: inherit; }
 .intro-card strong { display: block; margin-bottom: 3px; font-size: 14px; }
 .intro-card p { margin: 0; color: #81736a; font-size: 12px; line-height: 1.45; font-weight: 650; }
 
+.intro-hint-button {
+  position: absolute;
+  z-index: 8;
+  left: 28px;
+  bottom: 44px;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border: 2px solid rgba(255,255,255,.72);
+  border-radius: 50%;
+  background: rgba(237,221,249,.9);
+  box-shadow: inset 0 -4px 0 rgba(95,72,117,.12), 0 9px 24px rgba(63,83,76,.2);
+  color: #765b8f;
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: 1000;
+  animation: hintPop .34s cubic-bezier(.2,.9,.25,1.25);
+  transition: transform .18s ease, background .18s ease;
+}
+.intro-hint-button:hover { transform: translateY(-2px) scale(1.04); background: rgba(245,233,252,.96); }
+.intro-hint-button:active { transform: translateY(1px) scale(.97); }
+
 @keyframes cardArrive { from { opacity: 0; transform: translateY(18px) rotate(-2deg) scale(.92); } }
+@keyframes hintPop { from { opacity: 0; transform: scale(.68) rotate(-9deg); } }
 
 .stall-key {
   position: absolute;
@@ -216,7 +241,7 @@ button { color: inherit; }
 .navigation-blurb strong { font-size: 10px; line-height: 1.15; letter-spacing: .025em; }
 .navigation-blurb small { color: rgba(255,255,255,.65); font-size: 7px; font-weight: 800; letter-spacing: .035em; }
 
-.mobile-joystick, .navigation-mobile { display: none; }
+.mobile-joystick, .mobile-look-surface, .navigation-mobile { display: none; }
 
 .panel-backdrop {
   position: fixed;
@@ -418,16 +443,15 @@ button { color: inherit; }
   .top-left-badge { top: 18px; bottom: auto; left: 18px; font-size: 9px; padding: 7px 10px; }
   .music-toggle { top: 18px; right: 18px; padding: 8px 11px; }
   .stall-key { top: 88px; left: 16px; }
-  .navigation-desktop { display: none; }
-  .navigation-mobile { left: 16px; bottom: max(18px, env(safe-area-inset-bottom)); display: grid; max-width: 160px; transform: none; }
+  .navigation-mobile { left: 16px; bottom: max(76px, calc(env(safe-area-inset-bottom) + 76px)); max-width: 160px; transform: none; }
   .intro-card { left: 16px; bottom: 154px; width: min(330px, calc(100vw - 32px)); }
+  .intro-hint-button { left: max(18px, env(safe-area-inset-left)); bottom: max(18px, env(safe-area-inset-bottom)); }
   .action-prompt { bottom: 154px; min-width: 245px; }
   .mobile-joystick {
     position: absolute;
     z-index: 9;
     right: max(18px, env(safe-area-inset-right));
     bottom: max(18px, env(safe-area-inset-bottom));
-    display: grid;
     place-items: center;
     width: 118px;
     height: 118px;
@@ -475,6 +499,20 @@ button { color: inherit; }
   }
   .mobile-joystick:active .joystick-knob { transition: none; }
   .joystick-knob span { font-size: 17px; transform: translateY(-1px); }
+  .mobile-look-surface {
+    position: absolute;
+    z-index: 5;
+    inset: 0;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+}
+
+@media (pointer: coarse) {
+  .navigation-desktop { display: none; }
+  .navigation-mobile, .mobile-joystick { display: grid; }
+  .mobile-look-surface { display: block; }
 }
 
 @media (max-width: 560px) {
