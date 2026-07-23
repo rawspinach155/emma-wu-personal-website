@@ -1,4 +1,4 @@
-# Emma Wu's Little Plaza
+# Emma Wu's Personal Website
 
 Emma Wu's interactive 3D personal portfolio, built with Next.js, React Three
 Fiber, and Three.js.
