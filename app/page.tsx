@@ -2259,9 +2259,6 @@ function ThankYouPanel({ onClose }: { onClose: () => void }) {
               Thank you for visiting my website! If you couldn&apos;t already tell, I am a big foodie and this website features some of my favorite foods. I hope you enjoyed your time here and wish you some yummy eats in the near future!
             </p>
             <p className="thank-you-personal-signoff">- Vibecoded with love, Emma :)</p>
-            <div className="thank-you-signoff" aria-hidden="true">
-              <span>dumplings</span><b>·</b><span>fruit</span><b>·</b><span>matcha</span>
-            </div>
           </div>
           <div className="panel-footer"><span>thanks for visiting</span><span>Emma’s plaza · 2026</span></div>
         </div>
