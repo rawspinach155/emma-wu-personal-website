@@ -8,6 +8,7 @@ import * as THREE from "three";
 type SectionId = "about" | "experience" | "contact";
 type Direction = "ArrowUp" | "ArrowDown" | "ArrowLeft" | "ArrowRight";
 type ControlState = Record<Direction, boolean>;
+type JoystickVector = { x: number; y: number };
 
 type StallData = {
   id: SectionId;
@@ -577,6 +578,7 @@ function Cart({ data, active, onOpen }: { data: StallData; active: boolean; onOp
 
 function Player({
   controls,
+  joystick,
   paused,
   playerPosition,
   onNearChange,
@@ -584,6 +586,7 @@ function Player({
   onMove,
 }: {
   controls: React.MutableRefObject<ControlState>;
+  joystick: React.MutableRefObject<JoystickVector>;
   paused: boolean;
   playerPosition: React.MutableRefObject<THREE.Vector3>;
   onNearChange: (id: SectionId | null) => void;
@@ -651,8 +654,17 @@ function Player({
   useFrame(({ clock }, delta) => {
     if (!group.current) return;
     const keys = controls.current;
-    const horizontal = (keys.ArrowRight ? 1 : 0) - (keys.ArrowLeft ? 1 : 0);
-    const vertical = (keys.ArrowUp ? 1 : 0) - (keys.ArrowDown ? 1 : 0);
+    const horizontal = THREE.MathUtils.clamp(
+      (keys.ArrowRight ? 1 : 0) - (keys.ArrowLeft ? 1 : 0) + joystick.current.x,
+      -1,
+      1,
+    );
+    const vertical = THREE.MathUtils.clamp(
+      (keys.ArrowUp ? 1 : 0) - (keys.ArrowDown ? 1 : 0) + joystick.current.y,
+      -1,
+      1,
+    );
+    const inputStrength = Math.min(1, Math.hypot(horizontal, vertical));
     camera.getWorldDirection(forward.current);
     forward.current.y = 0;
     forward.current.normalize();
@@ -666,8 +678,8 @@ function Player({
         onMove();
       }
       direction.current.normalize();
-      const nextX = THREE.MathUtils.clamp(group.current.position.x + direction.current.x * delta * 3.25, -7.2, 7.2);
-      const nextZ = THREE.MathUtils.clamp(group.current.position.z + direction.current.z * delta * 3.25, -6.8, 6.6);
+      const nextX = THREE.MathUtils.clamp(group.current.position.x + direction.current.x * delta * 3.25 * inputStrength, -7.2, 7.2);
+      const nextZ = THREE.MathUtils.clamp(group.current.position.z + direction.current.z * delta * 3.25 * inputStrength, -6.8, 6.6);
       const blocked = STALLS.some((stall) => {
         const dx = Math.abs(nextX - stall.position[0]);
         const dz = Math.abs(nextZ - stall.position[2]);
@@ -677,7 +689,7 @@ function Player({
       group.current.rotation.y = Math.atan2(direction.current.x, direction.current.z);
     }
 
-    const stride = moving ? Math.sin(clock.elapsedTime * 10) * 0.48 : 0;
+    const stride = moving ? Math.sin(clock.elapsedTime * 10) * 0.48 * inputStrength : 0;
     if (leftLeg.current) leftLeg.current.rotation.x = THREE.MathUtils.lerp(leftLeg.current.rotation.x, stride, 0.24);
     if (rightLeg.current) rightLeg.current.rotation.x = THREE.MathUtils.lerp(rightLeg.current.rotation.x, -stride, 0.24);
     if (leftArm.current) leftArm.current.rotation.x = THREE.MathUtils.lerp(leftArm.current.rotation.x, -stride * 0.68, 0.2);
@@ -818,6 +830,7 @@ function CameraRig({ playerPosition }: { playerPosition: React.MutableRefObject<
 
 function World({
   controls,
+  joystick,
   activeSection,
   gameOpen,
   nearSection,
@@ -829,6 +842,7 @@ function World({
   onStartGame,
 }: {
   controls: React.MutableRefObject<ControlState>;
+  joystick: React.MutableRefObject<JoystickVector>;
   activeSection: SectionId | null;
   gameOpen: boolean;
   nearSection: SectionId | null;
@@ -866,6 +880,7 @@ function World({
       <PlazaGameBasket active={nearGameBasket && activeSection === null && !gameOpen} onOpen={onStartGame} />
       <Player
         controls={controls}
+        joystick={joystick}
         paused={activeSection !== null || gameOpen}
         playerPosition={playerPosition}
         onNearChange={onNearChange}
@@ -2095,38 +2110,91 @@ function InfoPanel({ section, onClose, onStartMatchaGame }: { section: SectionId
   );
 }
 
-function DPad({ onPress, onRelease }: { onPress: (key: Direction) => void; onRelease: (key: Direction) => void }) {
-  const button = (key: Direction, label: string, className: string) => (
-    <button
-      className={className}
-      aria-label={`Move ${key.replace("Arrow", "").toLowerCase()}`}
-      onPointerDown={(event) => {
-        event.preventDefault();
-        event.currentTarget.setPointerCapture(event.pointerId);
-        onPress(key);
-      }}
-      onPointerUp={(event) => {
-        event.preventDefault();
-        onRelease(key);
-      }}
-      onPointerCancel={() => onRelease(key)}
-      onPointerLeave={() => onRelease(key)}
-    >{label}</button>
-  );
+function MobileJoystick({ onMove }: { onMove: (x: number, y: number) => void }) {
+  const base = useRef<HTMLDivElement>(null);
+  const activePointer = useRef<number | null>(null);
+  const [knobOffset, setKnobOffset] = useState({ x: 0, y: 0 });
+
+  const reset = useCallback(() => {
+    activePointer.current = null;
+    setKnobOffset({ x: 0, y: 0 });
+    onMove(0, 0);
+  }, [onMove]);
+
+  const updateFromPointer = useCallback((clientX: number, clientY: number) => {
+    if (!base.current) return;
+    const bounds = base.current.getBoundingClientRect();
+    const centerX = bounds.left + bounds.width / 2;
+    const centerY = bounds.top + bounds.height / 2;
+    const maxTravel = bounds.width * 0.3;
+    const deltaX = clientX - centerX;
+    const deltaY = clientY - centerY;
+    const distance = Math.hypot(deltaX, deltaY);
+    const clampScale = distance > maxTravel ? maxTravel / distance : 1;
+    const offsetX = deltaX * clampScale;
+    const offsetY = deltaY * clampScale;
+    const rawX = offsetX / maxTravel;
+    const rawY = -offsetY / maxTravel;
+    const magnitude = Math.hypot(rawX, rawY);
+    const deadZone = 0.12;
+
+    setKnobOffset({ x: offsetX, y: offsetY });
+    if (magnitude <= deadZone) {
+      onMove(0, 0);
+      return;
+    }
+
+    const adjustedMagnitude = Math.min(1, (magnitude - deadZone) / (1 - deadZone));
+    onMove((rawX / magnitude) * adjustedMagnitude, (rawY / magnitude) * adjustedMagnitude);
+  }, [onMove]);
+
+  useEffect(() => () => onMove(0, 0), [onMove]);
 
   return (
-    <div className="dpad" aria-label="Movement controls">
-      {button("ArrowUp", "↑", "dpad-up")}
-      {button("ArrowLeft", "←", "dpad-left")}
-      <div className="dpad-center" />
-      {button("ArrowRight", "→", "dpad-right")}
-      {button("ArrowDown", "↓", "dpad-down")}
+    <div
+      ref={base}
+      className="mobile-joystick"
+      role="group"
+      aria-label="Movement joystick. Drag in any direction to walk."
+      onPointerDown={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        activePointer.current = event.pointerId;
+        event.currentTarget.setPointerCapture(event.pointerId);
+        updateFromPointer(event.clientX, event.clientY);
+      }}
+      onPointerMove={(event) => {
+        if (activePointer.current !== event.pointerId) return;
+        event.preventDefault();
+        event.stopPropagation();
+        updateFromPointer(event.clientX, event.clientY);
+      }}
+      onPointerUp={(event) => {
+        if (activePointer.current !== event.pointerId) return;
+        event.preventDefault();
+        event.stopPropagation();
+        if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+          event.currentTarget.releasePointerCapture(event.pointerId);
+        }
+        reset();
+      }}
+      onPointerCancel={reset}
+    >
+      <div className="joystick-orbit" aria-hidden="true" />
+      <div
+        className="joystick-knob"
+        aria-hidden="true"
+        style={{ transform: `translate3d(${knobOffset.x}px, ${knobOffset.y}px, 0)` }}
+      >
+        <span>✦</span>
+      </div>
     </div>
   );
 }
 
 export default function Home() {
   const controls = useRef<ControlState>({ ...EMPTY_CONTROLS });
+  const joystick = useRef<JoystickVector>({ x: 0, y: 0 });
   const audioRef = useRef<HTMLAudioElement>(null);
   const gameAudioRef = useRef<AudioContext | null>(null);
   const [nearSection, setNearSection] = useState<SectionId | null>(null);
@@ -2143,11 +2211,13 @@ export default function Home() {
     if (!gameAudioRef.current) gameAudioRef.current = new AudioContext();
     void gameAudioRef.current.resume();
     controls.current = { ...EMPTY_CONTROLS };
+    joystick.current = { x: 0, y: 0 };
     setShowIntro(false);
     setGameOpen(true);
   }, []);
-  const setControl = useCallback((key: Direction, value: boolean) => {
-    controls.current[key] = value;
+  const setJoystick = useCallback((x: number, y: number) => {
+    joystick.current.x = x;
+    joystick.current.y = y;
   }, []);
 
   useEffect(() => {
@@ -2243,6 +2313,7 @@ export default function Home() {
         <Suspense fallback={null}>
           <World
             controls={controls}
+            joystick={joystick}
             activeSection={activeSection}
             gameOpen={gameOpen || matchaGameOpen}
             nearSection={nearSection}
@@ -2272,7 +2343,7 @@ export default function Home() {
         <aside className="intro-card">
           <button onClick={() => setShowIntro(false)} aria-label="Dismiss instructions">×</button>
           <span className="intro-icon">⌁</span>
-          <div><strong>Welcome, friend!</strong><p>Drag anywhere to look around, then use WASD or the arrow keys to walk. Visit a cart—or find the little fruit basket to play!</p></div>
+          <div><strong>Welcome, friend!</strong><p>Drag anywhere to look around, then use WASD, the arrow keys, or the mobile joystick to walk. Visit a cart—or find the little fruit basket to play!</p></div>
         </aside>
       )}
 
@@ -2296,9 +2367,10 @@ export default function Home() {
         </button>
       )}
 
-      <DPad onPress={(key) => setControl(key, true)} onRelease={(key) => setControl(key, false)} />
+      {!activeSection && !gameOpen && !matchaGameOpen && <MobileJoystick onMove={setJoystick} />}
 
-      <div className="navigation-blurb"><span>WASD</span><strong>Use WASD or arrow keys</strong><small>Drag to look around · Enter to open</small></div>
+      <div className="navigation-blurb navigation-desktop"><span>WASD</span><strong>Use WASD or arrow keys</strong><small>Drag to look around · Enter to open</small></div>
+      <div className="navigation-blurb navigation-mobile"><span>MOVE</span><strong>Drag the joystick to walk</strong><small>Drag elsewhere to look around</small></div>
 
       {activeSection && (
         <InfoPanel
