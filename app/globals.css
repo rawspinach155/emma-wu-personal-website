@@ -451,7 +451,8 @@ button { color: inherit; }
 .matcha-whisk-button:disabled { cursor: default; opacity: .72; }
 .matcha-timing-panel > p { margin: 8px 0 0; color: #978b7d; font-size: 7px; font-weight: 750; }
 
-.matcha-result-card { position: absolute; z-index: 5; top: 50%; left: 50%; width: min(430px, calc(100vw - 34px)); padding: 31px; border: 3px solid #f0e5c9; border-radius: 29px; background: linear-gradient(150deg, #fffdf3, #eef4df); box-shadow: 0 14px 0 rgba(91,104,73,.13), 0 34px 70px rgba(58,83,62,.28); transform: translate(-50%, -50%); text-align: center; animation: menuOpen .55s cubic-bezier(.16,.9,.28,1.18) both; }
+.matcha-result-card { position: absolute; z-index: 5; top: 50%; left: 50%; width: min(430px, calc(100vw - 34px)); padding: 31px; border: 3px solid #f0e5c9; border-radius: 29px; background: linear-gradient(150deg, #fffdf3, #eef4df); box-shadow: 0 14px 0 rgba(91,104,73,.13), 0 34px 70px rgba(58,83,62,.28); transform: translate(-50%, -50%); text-align: center; animation: matchaResultOpenCenter .55s cubic-bezier(.16,.9,.28,1.18) both; }
+.matcha-result-card.result-won { left: 25%; width: min(390px, calc(48vw - 34px)); animation-name: matchaResultOpenLeft; }
 .matcha-result-card.result-lost { background: linear-gradient(150deg, #fffdf3, #f6e5e1); }
 .matcha-result-card > span { color: #81956f; font-size: 8px; font-weight: 950; letter-spacing: .12em; text-transform: uppercase; }
 .matcha-result-card.result-lost > span { color: #aa7374; }
@@ -461,6 +462,15 @@ button { color: inherit; }
 .matcha-result-card button { padding: 11px; border: 0; border-radius: 13px; background: #dce9c9; color: #627259; cursor: pointer; font-size: 9px; font-weight: 950; }
 .matcha-result-card button:last-child { background: #eee4d9; color: #776c64; }
 .matcha-result-card button:hover { transform: translateY(-2px); }
+
+@keyframes matchaResultOpenCenter {
+  from { opacity: 0; transform: translate(-50%, calc(-50% + 70px)) rotateX(18deg) rotateZ(-2deg) scale(.76); }
+  to { opacity: 1; transform: translate(-50%, -50%) rotateX(0) rotateZ(0) scale(1); }
+}
+@keyframes matchaResultOpenLeft {
+  from { opacity: 0; transform: translate(-50%, calc(-50% + 70px)) rotateX(18deg) rotateZ(-2deg) scale(.76); }
+  to { opacity: 1; transform: translate(-50%, -50%) rotateX(0) rotateZ(0) scale(1); }
+}
 
 @keyframes fadeIn { from { opacity: 0; } }
 @keyframes menuOpen {
@@ -586,6 +596,13 @@ button { color: inherit; }
   .matcha-whisk-button { padding: 9px 16px; }
   .matcha-timing-panel > p { line-height: 1.35; }
   .matcha-result-card > div { grid-template-columns: 1fr; }
+  .matcha-result-card.result-won { left: 12px; width: min(280px, 68vw); padding: 22px 18px; transform: translateY(-50%); animation-name: matchaResultOpenMobileLeft; }
+  .matcha-result-card.result-won h2 { font-size: 25px; }
+}
+
+@keyframes matchaResultOpenMobileLeft {
+  from { opacity: 0; transform: translateY(calc(-50% + 60px)) rotateX(16deg) rotateZ(-2deg) scale(.78); }
+  to { opacity: 1; transform: translateY(-50%) rotateX(0) rotateZ(0) scale(1); }
 }
 
 @media (prefers-reduced-motion: reduce) {

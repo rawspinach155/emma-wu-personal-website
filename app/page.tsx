@@ -2152,7 +2152,7 @@ function InfoPanel({ section, onClose, onStartMatchaGame }: { section: SectionId
               <article>
                 <span className="company-logo-tile" aria-hidden="true"><span className="company-logo logo-meta" /></span>
                 <div>
-                  <small>Jun 2026–Present · Menlo Park, CA</small>
+                  <small>Jun–Sep 2026 · Menlo Park, CA</small>
                   <h3>Meta</h3>
                   <p><strong>Data Engineer Intern</strong><br />Central Product · Experimentation Platform</p>
                 </div>
