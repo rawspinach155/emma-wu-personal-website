@@ -326,6 +326,8 @@ button { color: inherit; }
 .portrait-card { display: grid; align-content: center; justify-items: center; gap: 10px; min-height: 180px; text-align: center; }
 .portrait-card img { display: block; width: 100%; aspect-ratio: 1; border: 3px solid rgba(255,255,255,.72); border-radius: 17px; object-fit: cover; box-shadow: 0 8px 18px rgba(105,75,63,.14); }
 .portrait-card small { color: #8d6e63; font-size: 9px; font-weight: 850; line-height: 1.35; }
+.portfolio-blurb { margin: 24px 0 0; color: #766b63; font-size: 12px; font-weight: 700; line-height: 1.6; text-align: center; }
+.portfolio-blurb a { color: #8d5145; text-decoration: underline; text-underline-offset: 3px; }
 .mini-mascot { display: flex; align-items: center; justify-content: center; gap: 5px; width: 92px; height: 110px; border-radius: 48% 48% 42% 42%; background: #fffdf3; box-shadow: 0 9px 0 rgba(128,91,75,.08); color: #534b47; font-weight: 1000; }
 .mini-mascot span:nth-child(2) { transform: translateY(9px); }
 .about-notes { padding: 12px 5px; }

@@ -2115,9 +2115,15 @@ function InfoPanel({ section, onClose, onStartMatchaGame }: { section: SectionId
 
         {section === "about" && (
           <div className="about-grid">
-            <div className="mini-card portrait-card">
-              <img src="/emma-headshot.png" alt="Portrait of Emma Wu at UCLA" />
-              <small>Emma Wu · UCLA</small>
+            <div className="portrait-column">
+              <div className="mini-card portrait-card">
+                <img src="/emma-headshot.png" alt="Portrait of Emma Wu at UCLA" />
+                <small>Emma Wu · UCLA</small>
+              </div>
+              <p className="portfolio-blurb">
+                I also do content creation on the side! Check out my portfolio{" "}
+                <a href="https://eatingwuu.vercel.app/" target="_blank" rel="noreferrer">here</a>.
+              </p>
             </div>
             <div className="about-notes">
               <section>
