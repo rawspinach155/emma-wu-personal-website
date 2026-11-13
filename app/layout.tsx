@@ -11,17 +11,17 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     title: "Emma Wu's Personal Website",
-    description: "Explore Emma Wu’s playful 3D food-cart portfolio plaza.",
+    description: "Meet Emma Wu: UCLA Statistics and Data Science, professional experience, and a playful 3D portfolio.",
     openGraph: {
       title: "Emma Wu's Personal Website",
-      description: "Explore a cozy 3D plaza to learn about Emma, her experience, and how to get in touch.",
+      description: "Get to know Emma Wu, explore her experience in data and tech, and step into her interactive 3D plaza.",
       type: "website",
       images: [{ url: ogImage, width: 1600, height: 900, alt: "Emma Wu on a soft lavender background" }],
     },
     twitter: {
       card: "summary_large_image",
       title: "Emma Wu's Personal Website",
-      description: "A playful 3D food-cart portfolio.",
+      description: "Data, stories, and curiosity. Explore Emma Wu’s portfolio in regular or 3D mode.",
       images: [ogImage],
     },
   };
