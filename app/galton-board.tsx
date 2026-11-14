@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 type Ball = { step: number; slot: number; next: number; progress: number };
 const ROWS = 16;
-const BATCH = 800;
+const BATCH = 600;
 
 export default function GaltonBoard() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -49,8 +49,8 @@ export default function GaltonBoard() {
         clock += tick;
         while (clock >= .035 && spawned < BATCH) {
           clock -= .035; spawned++;
-          const halfWidth = Math.max(1, Math.floor(width / (2 * gap)) - 1);
-          const slot = Math.floor(Math.random() * (halfWidth * 2 + 1)) - halfWidth;
+          // A centered release and fair peg decisions produce a symmetric binomial distribution.
+          const slot = 0;
           balls.push({ step: 0, slot, next: slot + (Math.random() < .5 ? -.5 : .5), progress: 0 });
         }
         balls = balls.filter(ball => {
@@ -61,9 +61,7 @@ export default function GaltonBoard() {
               bins.set(ball.slot, (bins.get(ball.slot) || 0) + 1);
               return false;
             }
-            // A gentle inward bias keeps widely scattered drops collecting near the middle.
-            const rightChance = Math.max(.08, Math.min(.92, .5 - ball.slot * .045));
-            ball.next = ball.slot + (Math.random() < rightChance ? .5 : -.5);
+            ball.next = ball.slot + (Math.random() < .5 ? .5 : -.5);
           }
           return true;
         });
