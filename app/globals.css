@@ -323,8 +323,8 @@ button { color: inherit; }
 
 .about-grid { display: grid; grid-template-columns: .8fr 1.2fr; align-items: start; gap: 18px; }
 .mini-card { padding: 17px; border: 1px solid rgba(127,104,89,.12); border-radius: 20px; background: #f6dccf; box-shadow: inset 0 -5px 0 rgba(127,90,73,.06); }
-.portrait-card { display: grid; align-content: center; justify-items: center; gap: 10px; min-height: 180px; text-align: center; }
-.portrait-card img { display: block; width: 100%; aspect-ratio: 1; border: 3px solid rgba(255,255,255,.72); border-radius: 17px; object-fit: cover; box-shadow: 0 8px 18px rgba(105,75,63,.14); }
+.portrait-card { display: block; min-height: 0; text-align: center; }
+.portrait-card img { display: block; width: 100%; height: auto; aspect-ratio: auto; border: 3px solid rgba(255,255,255,.72); border-radius: 17px; object-fit: cover; box-shadow: 0 8px 18px rgba(105,75,63,.14); }
 .portrait-card small { color: #8d6e63; font-size: 9px; font-weight: 850; line-height: 1.35; }
 .portfolio-blurb { margin: 24px 0 0; color: #766b63; font-size: 12px; font-weight: 700; line-height: 1.6; text-align: center; }
 .portfolio-blurb a { color: #8d5145; text-decoration: underline; text-underline-offset: 3px; }
@@ -569,8 +569,8 @@ button { color: inherit; }
   .thank-you-note .thank-you-personal-signoff { font-size: 10px; }
   .panel-stamp { width: 52px; height: 52px; border-radius: 17px; }
   .about-grid { grid-template-columns: 1fr; }
-  .portrait-card { min-height: 0; grid-template-columns: 96px 1fr; text-align: left; }
-  .portrait-card img { width: 96px; }
+  .portrait-card { min-height: 0; }
+  .portrait-card img { width: 100%; height: auto; }
   .mini-mascot { width: 68px; height: 82px; }
   .contact-links { grid-template-columns: 1fr; }
   .panel-footer { flex-direction: column; gap: 5px; }

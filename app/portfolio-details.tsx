@@ -46,10 +46,10 @@ export function AboutDetails() {
                 <h3>school involvements</h3>
                 <div className="involvement-links">
                   <a href="https://datascienceunion.com/" target="_blank" rel="noreferrer">
-                    <strong>UCLA Data Science Union</strong><span>2024–present · Visit organization ↗</span>
+                    <strong>UCLA Data Science Union</strong><span>2024–present · Visit organization ↗︎</span>
                   </a>
                   <a href="https://statisticsucla.com/" target="_blank" rel="noreferrer">
-                    <strong>UCLA Statistics Club</strong><span>Marketing Chair 2024–2026 · Visit organization ↗</span>
+                    <strong>UCLA Statistics Club</strong><span>Marketing Chair 2024–2026 · Visit organization ↗︎</span>
                   </a>
                 </div>
               </section>
@@ -95,7 +95,7 @@ export function ExperienceDetails() {
                     href="https://blog.sentry.io/meet-sentrys-2025-summer-interns/"
                     target="_blank"
                     rel="noreferrer"
-                  >Meet Sentry’s 2025 summer interns ↗</a>
+                  >Meet Sentry’s 2025 summer interns ↗︎</a>
                 </div>
               </article>
               <article>
@@ -145,7 +145,7 @@ export function ContactDetails() {
               <a className="linkedin-button" href="https://www.linkedin.com/in/emmawu155" target="_blank" rel="noreferrer">
                 <span className="linkedin-mark" aria-hidden="true">in</span>
                 <strong>LinkedIn</strong>
-                <small aria-hidden="true">↗</small>
+                <small aria-hidden="true">↗︎</small>
               </a>
             </div>
           </div>

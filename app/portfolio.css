@@ -175,3 +175,10 @@
 .site-mode-3d .matcha-game-title > strong {
   font-family: 'Bootzy TM', Impact, sans-serif;
 }
+
+.editorial-contact .contact-card .linkedin-mark {
+  background: var(--purple);
+  color: var(--paper);
+  box-shadow: none;
+}
+.editorial-contact .linkedin-button small { color: var(--paper); }

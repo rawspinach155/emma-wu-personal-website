@@ -24,7 +24,7 @@ export default function Home() {
           <div className="editorial-first-screen">
         <header className="editorial-header">
           <a className="editorial-wordmark" href="#top">emma wu<span aria-hidden="true">✳︎</span></a>
-          <nav aria-label="Main navigation"><a href="#about">about</a><a href="#experience">experience</a><a href="#contact">say hello ↗</a></nav>
+          <nav aria-label="Main navigation"><a href="#about">about</a><a href="#experience">experience</a><a href="#contact">say hello ↗︎</a></nav>
         </header>
           <section className="editorial-hero">
             <GaltonBoard />
@@ -32,7 +32,7 @@ export default function Home() {
             <span className="editorial-eyebrow">welcome to my personal site</span>
             <div className="editorial-title"><span className="hero-sparkle" aria-hidden="true">✳︎</span><h1>hi, i’m <span><a href="https://www.linkedin.com/in/emmawu155/" target="_blank" rel="noreferrer">emma</a>.</span></h1><span className="hero-heart" aria-hidden="true">♡</span></div>
             <p>UCLA Statistics &amp; Data Science student.<br />Turning data into insights, and insights into meaningful stories.</p>
-            <a className="editorial-button" href="#experience">explore my experience <span aria-hidden="true">↗</span></a>
+            <a className="editorial-button" href="#experience">explore my experience <span aria-hidden="true">↗︎</span></a>
             </div>
           </section>
           </div>
@@ -49,7 +49,7 @@ export default function Home() {
             <span className="editorial-eyebrow">03 / {sectionContent.contact.eyebrow}</span><h2>{sectionContent.contact.title}</h2><p>{sectionContent.contact.intro}</p><ContactDetails />
           </section>
         </main>
-        <footer className="editorial-footer"><a className="editorial-wordmark" href="#top">emma wu ✳︎</a><a href="#top">back to the top ↑</a></footer>
+        <footer className="editorial-footer"><a className="editorial-wordmark" href="#top">emma wu ✳︎</a><a href="#top">back to the top ↑︎</a></footer>
       </div>}
     </div>
   );
