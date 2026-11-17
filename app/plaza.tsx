@@ -4,7 +4,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { ContactShadows, Float, Html, OrbitControls, RoundedBox } from "@react-three/drei";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
-import { sectionContent, AboutDetails, ExperienceDetails, ContactDetails } from "./portfolio-details";
+import { sectionContent, ExperiencePhotos, AboutDetails, ExperienceDetails, ContactDetails } from "./portfolio-details";
 
 type SectionId = "about" | "experience" | "contact";
 type Direction = "ArrowUp" | "ArrowDown" | "ArrowLeft" | "ArrowRight";
@@ -145,6 +145,14 @@ function PlazaTitle() {
   const [texture, setTexture] = useState<THREE.CanvasTexture | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
+    let generatedTexture: THREE.CanvasTexture | undefined;
+    async function drawLabel() {
+      await Promise.all([
+        document.fonts.load('900 104px "Bootzy TM"'),
+        document.fonts.load('400 72px Inter'),
+      ]);
+      if (cancelled) return;
     const canvas = document.createElement("canvas");
     canvas.width = 2048;
     canvas.height = 768;
@@ -155,15 +163,15 @@ function PlazaTitle() {
     context.textAlign = "center";
     context.textBaseline = "middle";
     context.fillStyle = "rgba(94, 59, 34, 0.27)";
-    context.font = '900 356px "Arial Rounded MT Bold", "Trebuchet MS", sans-serif';
+    context.font = '900 356px "Bootzy TM", sans-serif';
     context.fillText("Emma Wu", 1038, 247);
     context.fillStyle = "#704729";
     context.fillText("Emma Wu", 1024, 224);
     context.fillStyle = "#7c5233";
-    context.font = '900 72px "Arial Rounded MT Bold", "Trebuchet MS", sans-serif';
+    context.font = '400 72px Inter, sans-serif';
     context.fillText("welcome to my personal website", 1024, 506);
     context.fillStyle = "#81583a";
-    context.font = '900 58px "Arial Rounded MT Bold", "Trebuchet MS", sans-serif';
+    context.font = '400 58px Inter, sans-serif';
     context.fillText("(talk to a cart to learn more!)", 1024, 624);
 
     const nextTexture = new THREE.CanvasTexture(canvas);
@@ -171,7 +179,13 @@ function PlazaTitle() {
     nextTexture.anisotropy = 8;
     nextTexture.needsUpdate = true;
     setTexture(nextTexture);
-    return () => nextTexture.dispose();
+    generatedTexture = nextTexture;
+    }
+    void drawLabel();
+    return () => {
+      cancelled = true;
+      generatedTexture?.dispose();
+    };
   }, []);
 
   if (!texture) return null;
@@ -364,6 +378,14 @@ function CartLabel({ label, active }: { label: string; active: boolean }) {
   const [texture, setTexture] = useState<THREE.CanvasTexture | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
+    let generatedTexture: THREE.CanvasTexture | undefined;
+    async function drawLabel() {
+      await Promise.all([
+        document.fonts.load('900 104px "Bootzy TM"'),
+        document.fonts.load('400 72px Inter'),
+      ]);
+      if (cancelled) return;
     const canvas = document.createElement("canvas");
     canvas.width = 1024;
     canvas.height = 256;
@@ -373,14 +395,20 @@ function CartLabel({ label, active }: { label: string; active: boolean }) {
     context.textAlign = "center";
     context.textBaseline = "middle";
     context.fillStyle = "#574740";
-    context.font = '900 104px "Arial Rounded MT Bold", "Trebuchet MS", sans-serif';
+    context.font = '900 104px "Bootzy TM", sans-serif';
     context.fillText(label, 512, 130);
     const nextTexture = new THREE.CanvasTexture(canvas);
     nextTexture.colorSpace = THREE.SRGBColorSpace;
     nextTexture.anisotropy = 8;
     nextTexture.needsUpdate = true;
     setTexture(nextTexture);
-    return () => nextTexture.dispose();
+    generatedTexture = nextTexture;
+    }
+    void drawLabel();
+    return () => {
+      cancelled = true;
+      generatedTexture?.dispose();
+    };
   }, [label]);
 
   if (!texture) return null;
@@ -1476,6 +1504,14 @@ function MilkCartonLabel() {
   const [texture, setTexture] = useState<THREE.CanvasTexture | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
+    let generatedTexture: THREE.CanvasTexture | undefined;
+    async function drawLabel() {
+      await Promise.all([
+        document.fonts.load('900 104px "Bootzy TM"'),
+        document.fonts.load('400 72px Inter'),
+      ]);
+      if (cancelled) return;
     const canvas = document.createElement("canvas");
     canvas.width = 512;
     canvas.height = 220;
@@ -1485,14 +1521,20 @@ function MilkCartonLabel() {
     context.textAlign = "center";
     context.textBaseline = "middle";
     context.fillStyle = "#5f7c55";
-    context.font = '900 108px "Arial Rounded MT Bold", "Trebuchet MS", sans-serif';
+    context.font = '600 108px Inter, sans-serif';
     context.fillText("MILK", 256, 116);
     const nextTexture = new THREE.CanvasTexture(canvas);
     nextTexture.colorSpace = THREE.SRGBColorSpace;
     nextTexture.anisotropy = 8;
     nextTexture.needsUpdate = true;
     setTexture(nextTexture);
-    return () => nextTexture.dispose();
+    generatedTexture = nextTexture;
+    }
+    void drawLabel();
+    return () => {
+      cancelled = true;
+      generatedTexture?.dispose();
+    };
   }, []);
 
   if (!texture) return null;
@@ -2085,6 +2127,8 @@ function InfoPanel({ section, onClose, onStartMatchaGame }: { section: SectionId
         </button>
         {section === "contact" && <button className="play-game-button" type="button" onClick={onStartMatchaGame}>want a matcha?</button>}
         <div className="panel-content-frame">
+        <div>
+        <div>
         <div className="panel-heading">
           <span className="panel-stamp" aria-hidden="true">{foodEmoji}</span>
           <div>
@@ -2093,10 +2137,15 @@ function InfoPanel({ section, onClose, onStartMatchaGame }: { section: SectionId
           </div>
         </div>
         <p className="panel-intro">{content.intro}</p>
+        </div>
+        </div>
 
         {section === "about" && <AboutDetails />}
 
-        {section === "experience" && <ExperienceDetails />}
+        {section === "experience" && <>
+          <ExperienceDetails />
+          <div className="panel-experience-photos"><ExperiencePhotos fullWidth /></div>
+        </>}
 
         {section === "contact" && <ContactDetails />}
 

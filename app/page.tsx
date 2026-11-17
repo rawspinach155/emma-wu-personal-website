@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useState } from "react";
-import { AboutDetails, ExperienceDetails, ContactDetails, sectionContent } from "./portfolio-details";
+import { ExperiencePhotos, AboutDetails, ExperienceDetails, ContactDetails, sectionContent } from "./portfolio-details";
 import "./portfolio.css";
 import GaltonBoard from "./galton-board";
 
@@ -30,7 +30,7 @@ export default function Home() {
             <GaltonBoard />
             <div className="hero-copy">
             <span className="editorial-eyebrow">welcome to my personal site</span>
-            <div className="editorial-title"><span className="hero-sparkle" aria-hidden="true">✳︎</span><h1>hi, i’m <span>emma.</span></h1><span className="hero-heart" aria-hidden="true">♡</span></div>
+            <div className="editorial-title"><span className="hero-sparkle" aria-hidden="true">✳︎</span><h1>hi, i’m <span><a href="https://www.linkedin.com/in/emmawu155/" target="_blank" rel="noreferrer">emma</a>.</span></h1><span className="hero-heart" aria-hidden="true">♡</span></div>
             <p>UCLA Statistics &amp; Data Science student.<br />Turning data into insights, and insights into meaningful stories.</p>
             <a className="editorial-button" href="#experience">explore my experience <span aria-hidden="true">↗</span></a>
             </div>
@@ -42,15 +42,14 @@ export default function Home() {
           </section>
           <section className="editorial-section editorial-experience" id="experience">
             <span className="editorial-eyebrow">02 / {sectionContent.experience.eyebrow}</span>
-            <div className="editorial-heading-row"><h2>{sectionContent.experience.title}</h2></div>
-            <p className="editorial-intro">{sectionContent.experience.intro}</p>
+            <div className="editorial-heading-row experience-heading-with-photos"><div className="experience-heading-copy"><h2>{sectionContent.experience.title}</h2><p className="editorial-intro">{sectionContent.experience.intro}</p></div><ExperiencePhotos /></div>
             <ExperienceDetails />
           </section>
           <section className="editorial-contact" id="contact">
             <span className="editorial-eyebrow">03 / {sectionContent.contact.eyebrow}</span><h2>{sectionContent.contact.title}</h2><p>{sectionContent.contact.intro}</p><ContactDetails />
           </section>
         </main>
-        <footer className="editorial-footer"><a className="editorial-wordmark" href="#top">emma wu ✳︎</a><span>made with care & curiosity.</span><a href="#top">back to the top ↑</a></footer>
+        <footer className="editorial-footer"><a className="editorial-wordmark" href="#top">emma wu ✳︎</a><a href="#top">back to the top ↑</a></footer>
       </div>}
     </div>
   );

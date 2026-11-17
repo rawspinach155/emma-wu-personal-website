@@ -134,3 +134,44 @@
   .editorial-hero { padding-top: 75px; padding-bottom: 45px; }
   .editorial-hero h1 { font-size: 60px; }
 }
+
+.experience-heading-with-photos { display: flex; align-items: center; justify-content: space-between; gap: 35px; }
+.experience-heading-copy { flex: 1; min-width: 0; }
+.experience-heading-copy h2 { margin-bottom: 14px; }
+.experience-heading-copy .editorial-intro { margin: 0; max-width: none; }
+.experience-heading-photos { display: flex; align-items: center; gap: 16px; width: min(46%, 450px); flex-shrink: 0; padding: 15px 4px; }
+.experience-heading-photos .experience-polaroid { width: calc(50% - 8px); margin: 0; box-sizing: border-box; }
+@media (max-width: 700px) {
+  .experience-heading-with-photos { flex-direction: column; align-items: flex-start; gap: 15px; }
+  .experience-heading-photos { width: min(100%, 420px); margin-bottom: 20px; }
+  .experience-heading-photos .experience-polaroid figcaption { font-size: 16px; }
+}
+
+.editorial-about .relevant-coursework p { font-size: 12px; line-height: 1.6; margin: 0; }
+
+.editorial-about .relevant-coursework h3 { font-family: var(--title); font-size: 30px; }
+.editorial-about .about-grid { row-gap: 30px; }
+
+/* Keep the plaza typography consistent with the default portfolio. */
+.site-mode-3d { font-family: Inter, sans-serif; }
+.site-mode-3d :is(h1, h2, h3) {
+  font-family: 'Bootzy TM', Impact, sans-serif;
+  letter-spacing: .005em;
+}
+.site-mode-3d .info-panel { font-family: Inter, sans-serif; }
+.site-mode-3d .info-panel :is(.panel-intro, .about-notes li, .timeline p, .relevant-coursework p) {
+  font-weight: 400;
+}
+.site-mode-3d .relevant-coursework .academic-link,
+.site-mode-3d .panel-about .panel-intro .academic-link {
+  text-decoration: none;
+}
+
+/* Every plaza surface uses the same two typefaces, including game overlays. */
+.site-mode-3d * { font-family: Inter, sans-serif; }
+.site-mode-3d :is(h1, h2, h3, h4, h5, h6),
+.site-mode-3d :is(h1, h2, h3, h4, h5, h6) *,
+.site-mode-3d .game-heading > strong,
+.site-mode-3d .matcha-game-title > strong {
+  font-family: 'Bootzy TM', Impact, sans-serif;
+}
